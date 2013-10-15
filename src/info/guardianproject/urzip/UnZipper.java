@@ -1,9 +1,8 @@
+
 package info.guardianproject.urzip;
 
 import android.os.AsyncTask;
 import android.util.Log;
-
-import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -86,15 +85,21 @@ public class UnZipper extends Observable {
             }
 
             Log.v(TAG, "Extracting: " + entry);
-            BufferedInputStream inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
-            BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(
+            BufferedInputStream input = new BufferedInputStream(zipfile.getInputStream(entry));
+            BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(
                     outputFile));
 
             try {
-                IOUtils.copy(inputStream, outputStream);
+                byte[] buf = new byte[8192];
+                while (true) {
+                    int length = input.read(buf);
+                    if (length < 0)
+                        break;
+                    output.write(buf, 0, length);
+                }
             } finally {
-                outputStream.close();
-                inputStream.close();
+                output.close();
+                input.close();
             }
         }
 
